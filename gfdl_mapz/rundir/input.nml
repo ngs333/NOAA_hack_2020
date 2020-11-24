@@ -1,0 +1,5 @@
+&main_nml
+  nx=96
+  ny=96
+  nz=92
+/

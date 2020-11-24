@@ -1,0 +1,36 @@
+.omp: Original code using OpenMP
+.acc: uses OPENACC, with ability to run one GPU for each MPI rank
+
+
+omp : original code
+acc : rearranged loop and partially implemented openacc.
+
+
+To compile
+  need access to nvhpc stack, MPI, NetCDF, and HDF5
+
+  modify nvhpc.mk, as needed
+
+  cd exec.omp
+  make OPENMP=Y
+
+  cd exec.acc
+  make OPENACC=ON
+
+
+To execute:
+  cd rundir
+
+  OMP_NUM_THREADS=<N> ../exec.omp/fv_mapz.x
+
+  mpirun -np 1 ../exec.acc/fv_mapz.x   (single GPU)
+  mpirun -np 2 ../exec.acc/fv_mapz.x   (two MPI-ranks with one GPU per rank)
+
+
+On an internal system with Intel Xeon E5-2637 (3.50GHz) and two NVidia V100 Tesla GPUs
+    1th OMP: 141.68s
+    8th OMP:  37.71s
+   1GPU ACC:   2.82s
+   2GPU ACC:   1.55s
+
+No attempts have been made to optimize the compiler options for OpenMP or OpenACC

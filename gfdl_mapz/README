@@ -1,0 +1,31 @@
+omp : original code
+acc : rearranged loop and partially implemented openacc.
+
+
+To compile
+  need access to nvhpc stack, NetCDF, and HDF5
+
+  modify nvhpc.mk, as needed
+
+  cd exec.omp
+  make OPENMP=Y
+
+  cd exec.acc
+  make OPENACC=ON
+
+
+To execute:
+  Need to get input data from ftp://ftp.gfdl.noaa.gov/pub/Rusty.Benson/fv_mapz_data.nc
+  cd rundir
+
+  OMP_NUM_THREADS=<N> ../exec.omp/fv_mapz.x
+
+  ../exec.acc/fv_mapz.x
+
+
+On an internal system with Intel Xeon E5-2637 (3.50GHz) and two NVidia V100 Tesla GPUs
+   1th OMP: 28.31s
+   8th OMP:  5.22s
+       ACC:  3.14s
+
+No attempts have been made to optimize the compiler options for OpenMP or OpenACC

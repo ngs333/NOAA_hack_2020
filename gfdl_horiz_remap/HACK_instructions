@@ -1,0 +1,37 @@
+
+To build the applications:
+  1) load nvhpc, netcdf, and hdf5
+  1) cd shared ; make      # do once only step
+  2) cd tools ; for f in `ls`; do (cd $f ; make ) ; done
+
+rebuilds of applications only need to be done in their respective directories
+
+
+
+
+To create input grids for use by fregrid and cubic_utils:
+
+  For a C48, first create the six tiles of the cube sphere:
+     make_hgrid --grid_type gnomonic_ed --nlon 96 --grid_name C48_grid
+
+  Now stitch them together into a solo model mosaic:
+     make_solo_mosaic --num_tiles 6 --dir ./ --mosaic C48_mosaic \
+           --tile_file C48_grid.tile1.nc,C48_grid.tile2.nc,C48_grid.tile3.nc,C48_grid.tile4.nc,C48_grid.tile5.nc,C48_grid.tile6.nc
+
+
+
+To decimate or promote a cube to cube (grids must be integer multiples):
+   cubic_utils/make_remap_file --input_mosaic C256_mosaic.nc --output_mosaic C48_mosaic.nc \
+            --remap_file remap_256-48.nc --interp_method conserve_order2
+
+
+
+To generate a weight file from cube to cube:
+   fregrid --input_mosaic C256_mosaic.nc --output_mosaic C48_mosaic.nc \
+           --remap_file remap_c256-c48.nc --interp_method conserve_order2
+
+
+
+To generate a weight file from cube to lat-lon:
+   fregrid --input_mosaic C256_mosaic.nc --nlon 144 --nlat 90 \
+           --remap_file remap_c256-144x90.nc --interp_method conserve_order2
