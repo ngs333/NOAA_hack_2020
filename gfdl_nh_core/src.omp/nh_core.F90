@@ -1,23 +1,3 @@
-!***********************************************************************
-!*                   GNU Lesser General Public License                 
-!*
-!* This file is part of the FV3 dynamical core.
-!*
-!* The FV3 dynamical core is free software: you can redistribute it 
-!* and/or modify it under the terms of the
-!* GNU Lesser General Public License as published by the
-!* Free Software Foundation, either version 3 of the License, or 
-!* (at your option) any later version.
-!*
-!* The FV3 dynamical core is distributed in the hope that it will be 
-!* useful, but WITHOUT ANYWARRANTY; without even the implied warranty 
-!* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-!* See the GNU General Public License for more details.
-!*
-!* You should have received a copy of the GNU Lesser General Public
-!* License along with the FV3 dynamical core.  
-!* If not, see <http://www.gnu.org/licenses/>.
-!***********************************************************************
 
 !>@brief The module 'nh_utils' peforms non-hydrostatic computations.
 !@author S. J. Lin, NOAA/GFDL
@@ -38,7 +18,7 @@ module nh_core_mod
    real, parameter:: r3 = 1./3.
    integer :: call_count_to_write = 48
 
-CONTAINS 
+CONTAINS
 
   subroutine Riem_Solver_c(ms,   dt,  is,   ie,   js, je, km,   ng,  &
                            akap, cappa, cp,  ptop, hs, w3,  pt, q_con, &
@@ -52,7 +32,7 @@ CONTAINS
    real, intent(in), dimension(is-ng:,js-ng:,1:):: q_con, cappa
    real, intent(in)::   hs(is-ng:ie+ng,js-ng:je+ng)
    real, intent(in), dimension(is-ng:ie+ng,js-ng:je+ng,km):: w3
-! OUTPUT PARAMETERS 
+! OUTPUT PARAMETERS
    real, intent(inout), dimension(is-ng:ie+ng,js-ng:je+ng,km+1):: gz
    real, intent(  out), dimension(is-ng:ie+ng,js-ng:je+ng,km+1):: pef
 ! Local:

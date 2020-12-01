@@ -1,22 +1,3 @@
-!***********************************************************************
-!*                   GNU General Public License                        *
-!* This file is a part of fvGFS.                                       *
-!*                                                                     *
-!* fvGFS is free software; you can redistribute it and/or modify it    *
-!* and are expected to follow the terms of the GNU General Public      *
-!* License as published by the Free Software Foundation; either        *
-!* version 2 of the License, or (at your option) any later version.    *
-!*                                                                     *
-!* fvGFS is distributed in the hope that it will be useful, but        *
-!* WITHOUT ANY WARRANTY; without even the implied warranty of          *
-!* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   *
-!* General Public License for more details.                            *
-!*                                                                     *
-!* For the full text of the GNU General Public License,                *
-!* write to: Free Software Foundation, Inc.,                           *
-!*           675 Mass Ave, Cambridge, MA 02139, USA.                   *
-!* or see:   http://www.gnu.org/licenses/gpl.html                      *
-!***********************************************************************
 ! SJL: Apr 12, 2012
 ! This revision may actually produce rounding level differences due to the elimination of KS to compute
 ! pressure level for remapping.
@@ -110,7 +91,7 @@ contains
     real, intent(inout)::  u(isd:ied  ,jsd:jed+1,km)   ! u-wind (m/s)
     real, intent(inout)::  v(isd:ied+1,jsd:jed  ,km)   ! v-wind (m/s)
     real, intent(inout)::  w(isd:     ,jsd:     ,1:)   ! vertical velocity (m/s)
-    real, intent(inout):: pt(isd:ied  ,jsd:jed  ,km)   ! cp*virtual potential temperature 
+    real, intent(inout):: pt(isd:ied  ,jsd:jed  ,km)   ! cp*virtual potential temperature
     ! as input; output: temperature
     real, intent(inout), dimension(isd:,jsd:,1:)::delz
     logical, intent(in):: hydrostatic
@@ -135,7 +116,7 @@ contains
     real, dimension(is:ie,js:je+1):: gz
     real rcp, rg, tmp, tpe, rrg, bkh, dtmp, k1k
     logical:: fast_mp_consv
-    integer:: i,j,k 
+    integer:: i,j,k
     integer:: nt, iq, n, kmp, kp, k_next
 
     k1k = rdgas/cv_air   ! akap / (1.-akap) = rg/Cv=0.4
@@ -257,7 +238,7 @@ contains
 !$ACC end kernels
     if ( kord_tm<0 ) then
        !----------------------------------
-       ! Map t using logp 
+       ! Map t using logp
        !----------------------------------
           call map_scalar(km,  peln,  pt, gz,   &
                km,  pn2,           pt,              &
@@ -276,7 +257,7 @@ contains
           call map1_q2(km, pe1, q(isd,jsd,1,iq),     &
                km, pe2, q2, dp2,             &
                is, ie, 0, kord_tr(iq), js, je, isd, ied, jsd, jed, 0.)
-        
+
        do k=1,km
           do j=js,je
              do i=is,ie
@@ -446,7 +427,7 @@ contains
           pe3(i,j,1) = ak(1)
        enddo
     enddo
-    
+
     do k=2,km+1
        bkh = 0.5*bk(k)
        do j=js,je+1
@@ -479,7 +460,7 @@ contains
     if( last_step ) then
 
        if ( consv > consv_min ) then
-          
+
           if ( hydrostatic ) then
              do j=js,je
                 do i=is,ie
@@ -700,10 +681,10 @@ contains
     integer, intent(in) :: km                ! Original vertical dimension
     integer, intent(in) :: kn                ! Target vertical dimension
     real, intent(in) ::   qs(i1:i2,j1:j2+1)       ! bottom BC
-    real, intent(in) ::  pe1(i1:i2,km+1,j1:j2)  ! pressure at layer edges 
+    real, intent(in) ::  pe1(i1:i2,km+1,j1:j2)  ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the original vertical coordinate
-    real, intent(in) ::  pe2(i1:i2,j1:j2+1,kn+1)  ! pressure at layer edges 
+    real, intent(in) ::  pe2(i1:i2,j1:j2+1,kn+1)  ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the new vertical coordinate
     real, intent(in) ::    q1(ibeg:iend,jbeg:jend,km) ! Field input
@@ -803,10 +784,10 @@ contains
     integer, intent(in) :: km                ! Original vertical dimension
     integer, intent(in) :: kn                ! Target vertical dimension
     real, intent(in) ::   qs(i1:,j1:)       ! bottom BC
-    real, intent(in) ::  pe1(i1:,j1:,:)  ! pressure at layer edges 
+    real, intent(in) ::  pe1(i1:,j1:,:)  ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the original vertical coordinate
-    real, intent(in) ::  pe2(i1:,j1:,:)  ! pressure at layer edges 
+    real, intent(in) ::  pe2(i1:,j1:,:)  ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the new vertical coordinate
     real, intent(in) ::    q1(ibeg:iend,jbeg:jend,km) ! Field input
@@ -824,7 +805,7 @@ contains
     real   q4(4,i1:i2,j1:j2,km)
     real    pl, pr, qsum, dp, esl
     integer i, j, k, l, m, k0
-    logical :: keep_going 
+    logical :: keep_going
 
     do k=1,km
        do j=j1,j2
@@ -902,10 +883,10 @@ contains
     integer, intent(in) :: km                ! Original vertical dimension
     integer, intent(in) :: kn                ! Target vertical dimension
 
-    real, intent(in) ::  pe1(i1:i2,j1:j2+1, km+1)     ! pressure at layer edges 
+    real, intent(in) ::  pe1(i1:i2,j1:j2+1, km+1)     ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the original vertical coordinate
-    real, intent(in) ::  pe2(i1:i2,j1:j2+1,kn+1)     ! pressure at layer edges 
+    real, intent(in) ::  pe2(i1:i2,j1:j2+1,kn+1)     ! pressure at layer edges
     ! (from model top to bottom surface)
     ! in the new vertical coordinate
     real, intent(in) ::  q1(ibeg:iend,jbeg:jend,km) ! Field input
@@ -1003,7 +984,7 @@ contains
    real  gam(i1:i2,j1:j2,km)
    real    q(i1:i2,j1:j2,km+1)
    real   d4(i1:i2,j1:j2)
-   real   bet, a_bot, grat 
+   real   bet, a_bot, grat
    real   pmp_1, lac_1, pmp_2, lac_2
    integer i, j, k, im
 
@@ -1027,7 +1008,7 @@ contains
       enddo
       do j=j1,j2
          do i=i1,i2
-            grat = delp(i,j,km-1) / delp(i,j,km) 
+            grat = delp(i,j,km-1) / delp(i,j,km)
             q(i,j,km) = (3.*(a4(1,i,j,km-1)+a4(1,i,j,km)) - grat*qs(i,j) - q(i,j,km-1)) /  &
                  (2. + grat + grat - gam(i,j,km))
             q(i,j,km+1) = qs(i,j)
@@ -1099,7 +1080,7 @@ contains
    im = i2 - i1 + 1
 
    ! Apply *large-scale* constraints
-   do j=j1,j2 
+   do j=j1,j2
       do i=i1,i2
          q(i,j,2) = min( q(i,j,2), max(a4(1,i,j,1), a4(1,i,j,2)) )
          q(i,j,2) = max( q(i,j,2), min(a4(1,i,j,1), a4(1,i,j,2)) )
@@ -1182,7 +1163,7 @@ contains
          enddo
       enddo
    elseif ( iv==-1 ) then
-      do j=j1,j2 
+      do j=j1,j2
          do i=i1,i2
             if ( a4(2,i,j,1)*a4(1,i,j,1) <= 0. ) a4(2,i,j,1) = 0.
          enddo
@@ -1422,7 +1403,7 @@ contains
             a4(3,i,j,km) = max(0., a4(3,i,j,km))
          enddo
       enddo
-   elseif ( iv .eq. -1 ) then 
+   elseif ( iv .eq. -1 ) then
       do j=j1,j2
          do i=i1,i2
             if ( a4(3,i,j,km)*a4(1,i,j,km) <= 0. )  a4(3,i,j,km) = 0.
@@ -1457,11 +1438,11 @@ contains
    real, intent(in)   :: delp(i1:i2,j1:j2,km)     ! layer pressure thickness
    real, intent(inout):: a4(4,i1:i2,j1:j2,km)     ! Interpolated values
    !-----------------------------------------------------------------------
-   logical:: extm(i1:i2,j1:j2,km) 
+   logical:: extm(i1:i2,j1:j2,km)
    real  gam(i1:i2,j1:j2,km)
    real    q(i1:i2,j1:j2,km+1)
    real   d4(i1:i2,j1:j2)
-   real   bet, a_bot, grat 
+   real   bet, a_bot, grat
    real   pmp_1, lac_1, pmp_2, lac_2
    integer i, j, k, im
 
@@ -1484,7 +1465,7 @@ contains
       enddo
       do j=j1,j2
          do i=i1,i2
-            grat = delp(i,j,km-1) / delp(i,j,km) 
+            grat = delp(i,j,km-1) / delp(i,j,km)
             q(i,j,km) = (3.*(a4(1,i,j,km-1)+a4(1,i,j,km)) - grat*qs(i,j) - q(i,j,km-1)) /  &
                  (2. + grat + grat - gam(i,j,km))
             q(i,j,km+1) = qs(i,j)
@@ -1551,7 +1532,7 @@ contains
    !------------------
    im = i2 - i1 + 1
 
-   ! Apply *large-scale* constraints 
+   ! Apply *large-scale* constraints
    do j=j1,j2
       do i=i1,i2
          q(i,j,2) = min( q(i,j,2), max(a4(1,i,j,1), a4(1,i,j,2)) )
@@ -1629,7 +1610,7 @@ contains
             a4(2,i,j,1) = max(0., a4(2,i,j,1))
          enddo
       enddo
-   elseif ( iv==-1 ) then 
+   elseif ( iv==-1 ) then
       do j=j1,j2
          do i=i1,i2
             if ( a4(2,i,j,1)*a4(1,i,j,1) <= 0. ) a4(2,i,j,1) = 0.
@@ -1667,7 +1648,7 @@ contains
    !-------------------------------------
    if ( abs(kord)<9 ) then
       do k=3,km-2
-         do j=j1,j2      
+         do j=j1,j2
             do i=i1,i2
                ! Left  edges
                pmp_1 = a4(1,i,j,k) - 2.*gam(i,j,k+1)
@@ -1840,7 +1821,7 @@ contains
             a4(3,i,j,km) = max(0., a4(3,i,j,km))
          enddo
       enddo
-   elseif ( iv .eq. -1 ) then 
+   elseif ( iv .eq. -1 ) then
       do j=j1,j2
          do i=i1,i2
             if ( a4(3,i,j,km)*a4(1,i,j,km) <= 0. )  a4(3,i,j,km) = 0.
@@ -1966,7 +1947,7 @@ contains
    integer, intent(in):: j2      ! Finishing latitude
    integer, intent(in):: km      ! vertical dimension
    integer, intent(in):: kord    ! Order (or more accurately method no.):
-   ! 
+   !
    real , intent(in):: delp(i1:i2,j1:j2,km)     ! layer pressure thickness
 
    ! !INPUT/OUTPUT PARAMETERS:
@@ -1975,8 +1956,8 @@ contains
    ! DESCRIPTION:
    !
    !   Perform the piecewise parabolic reconstruction
-   ! 
-   ! !REVISION HISTORY: 
+   !
+   ! !REVISION HISTORY:
    ! S.-J. Lin   revised at GFDL 2007
    !-----------------------------------------------------------------------
    ! local arrays:
@@ -2172,7 +2153,7 @@ contains
                ! Method#2 - better
                h2(i,j,k) = 2.*(dc(i,j,k+1)/delp(i,j,k+1) - dc(i,j,k-1)/delp(i,j,k-1))  &
                     / ( delp(i,j,k)+0.5*(delp(i,j,k-1)+delp(i,j,k+1)) )        &
-                    * delp(i,j,k)**2 
+                    * delp(i,j,k)**2
                ! Method#3
 !!!            h2(i,j,k) = dc(i,j,k+1) - dc(i,j,k-1)
             enddo
@@ -2336,7 +2317,7 @@ contains
 
 
  real function g_sum(p, ifirst, ilast, jfirst, jlast, ngc, area)
-! Fast version of globalsum 
+! Fast version of globalsum
       integer, intent(IN) :: ifirst, ilast
       integer, intent(IN) :: jfirst, jlast, ngc
       real, intent(IN) :: p(ifirst:ilast,jfirst:jlast)      ! field to be summed
