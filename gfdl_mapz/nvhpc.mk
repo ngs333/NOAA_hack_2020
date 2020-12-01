@@ -29,8 +29,8 @@ ACCFLAGS_OPT = -O2 -g -acc -ta=nvidia,time -Minfo=accel -Mcuda=lineinf -Minfo=al
 OMPFLAGS = -fast -mp -Minfo
 ACCFLAGS_DEBUG = -O2 -g -acc  -traceback -Ktrap=fp -Mbounds -Minfo=all  -Mbounds -Minfo=all -traceback -Mchkfpstk -Mchkstk -Mdalign -Mdclchk -Mdepchk -Miomutex -Mrecursive -Msave -Ktrap=fp -byteswapio 
 
-CFLAGS := $(INCLUDES)
-CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp -tp haswell
+CFLAGS := $(INCLUDES) -tp haswell
+CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 
 # start with blank LIBS
 LPATH := $(shell nf-config --flibs)
