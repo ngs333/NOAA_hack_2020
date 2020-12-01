@@ -18,9 +18,11 @@ To execute:
   Need to get input data from ftp://ftp.gfdl.noaa.gov/pub/Rusty.Benson/fv_mapz_data.nc
   cd rundir
 
-  OMP_NUM_THREADS=<N> ../exec.omp/fv_mapz.x
+  # Run on backend node with <N> cores
+  OMP_NUM_THREADS=<N> srun -n 1 -c <N> ../exec.omp/fv_mapz.x
 
-  ../exec.acc/fv_mapz.x
+  # Run on backend node with 1 GPU
+  srun -n 1 -G 1 ../exec.acc/fv_mapz.x
 
 
 On an internal system with Intel Xeon E5-2637 (3.50GHz) and two NVidia V100 Tesla GPUs
