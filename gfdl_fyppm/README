@@ -23,8 +23,8 @@ To execute:
 
   OMP_NUM_THREADS=<N> ../exec.omp/fyppm.x
 
-  ../exec.acc/fyppm.x  (single GPU)
-  ../exec.acc/fyppm.x  (two MPI-ranks with one GPU per rank)
+  mpirun -np 1 ../exec.acc/fyppm.x  (single GPU)
+  mpirun -np 2 ../exec.acc/fyppm.x  (two MPI-ranks with one GPU per rank)
 
 
 On an internal system with Intel Xeon E5-2637 (3.50GHz) and two NVidia V100 Tesla GPUs
