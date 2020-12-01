@@ -18,7 +18,8 @@ To execute:
   Need to get input data from ftp://ftp.gfdl.noaa.gov/pub/Rusty.Benson/Riem_Solver_c_data.nc
   cd rundir
 
-  OMP_NUM_THREADS=<N> ../exec.omp/nh_core.x
+  OMP_NUM_THREADS=<N> srun -n 1 -c <N> ../exec.omp/nh_core.x
+
 
   ../exec.acc/nh_core.x
 

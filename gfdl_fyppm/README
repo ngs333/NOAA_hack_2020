@@ -21,7 +21,7 @@ To compile
 To execute:
   cd rundir
 
-  OMP_NUM_THREADS=<N> ../exec.omp/fyppm.x
+  OMP_NUM_THREADS=<N> srun -n 1 -c <N> ../exec.omp/fyppm.x
 
   mpirun -np 1 ../exec.acc/fyppm.x  (single GPU)
   mpirun -np 2 ../exec.acc/fyppm.x  (two MPI-ranks with one GPU per rank)
