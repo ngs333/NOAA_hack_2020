@@ -2,13 +2,13 @@
 
 MPICC := nvc
 
-CFLAGS_SITE := -msse2
-FFLAGS_SITE := -msse2
+CFLAGS_SITE := -tp haswell
+FFLAGS_SITE := -tp haswell
 
 CLIBS_SITE :=
 FLIBS_SITE :=
 
-NETCDF_HOME := $$NETCDF_ROOT
+NETCDF_HOME := $(shell nc-config --prefix)
 HDF5_HOME := $$HDF5_ROOT
 
 NOPARALLEL := t

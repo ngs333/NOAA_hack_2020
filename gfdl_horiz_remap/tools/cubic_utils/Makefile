@@ -26,9 +26,9 @@ VPATH = $(SRCDIR):.
 CFLAGS   := -O3 -g -traceback $(CFLAGS_SITE)
 CFLAGS_O2:= -O2 -g -traceback $(CFLAGS_SITE)
 INCLUDES := -I${NETCDF_HOME}/include -I$(SRCDIR)/ -I$(SRCDIR)/../../shared
-CLIBS     := $(LDFLAGS) -L${NETCDF_HOME}/lib64 -L${HDF5_HOME}/lib -lnetcdf -lhdf5_hl -lhdf5 -lz $(CLIBS_SITE) $(STATIC)
+CLIBS     := $(LDFLAGS) $(shell nc-config --libs) $(CLIBS_SITE) $(STATIC)
 
-TARGETS  := make_remap_file
+TARGETS  := make_remap_file.x
 
 SOURCES  := make_remap_file.c
 
@@ -48,7 +48,7 @@ SHARED_OBJS = ../../shared/mpp.o ../../shared/mpp_domain.o  \
 
 all: $(TARGETS)
 
-make_remap_file: $(OBJECTS)
+make_remap_file.x: $(OBJECTS)
 	$(CC) -o $@ $^ $(SHARED_OBJS) $(CLIBS)
 
 %.o: %.c

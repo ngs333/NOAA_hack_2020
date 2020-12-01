@@ -29,9 +29,9 @@ VPATH = $(SRCDIR):.
 CFLAGS   := -O3 -traceback $(CFLAGS_SITE)
 CFLAGS_O2:= -O2 -traceback $(CFLAGS_SITE)
 INCLUDES := -I${NETCDF_HOME}/include -I$(SRCDIR)/ -I$(SRCDIR)/../../shared
-CLIBS     := $(LDFLAGS) -L${NETCDF_HOME}/lib64 -L${HDF5_HOME}/lib -lnetcdf -lhdf5_hl -lhdf5 -lz $(CLIBS_SITE) $(STATIC)
+CLIBS     := $(LDFLAGS) $(shell nc-config --libs) $(CLIBS_SITE) $(STATIC)
 
-TARGETS  := make_hgrid
+TARGETS  := make_hgrid.x
 TARGETS_PARALLEL := make_hgrid_parallel
 ifndef NOPARALLEL
 TARGETS += $(TARGETS_PARALLEL)
@@ -58,7 +58,7 @@ HEADERS = ./create_hgrid.h
 
 all: $(TARGETS)
 
-make_hgrid: $(OBJECTS)
+make_hgrid.x: $(OBJECTS)
 	$(CC) -o $@ $^ $(SHARED_OBJS) $(CLIBS)
 
 make_hgrid_parallel: $(OBJECTS)
