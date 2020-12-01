@@ -24,13 +24,13 @@ INCLUDES := $(shell nf-config --fflags)
 # -msse2 is added as a workaround for reproducibility on the c3 system.  We in the
 # modeling systems group are looking for why this is needed to allow run-to-run 
 # reproducibility on the c3 system.
-FFLAGS := -i4 -r8 -byteswapio -Mcray=pointer -Mflushz -Mdaz -D_F2000 -O2 $(INCLUDES)
+FFLAGS := -i4 -r8 -byteswapio -Mcray=pointer -Mflushz -Mdaz -D_F2000 -O2 $(INCLUDES) -tp haswell
 ACCFLAGS_OPT = -O2 -g -acc -ta=nvidia,time -Minfo=accel -Mcuda=lineinf -Minfo=all 
 OMPFLAGS = -fast -mp -Minfo
 ACCFLAGS_DEBUG = -O2 -g -acc  -traceback -Ktrap=fp -Mbounds -Minfo=all  -Mbounds -Minfo=all -traceback -Mchkfpstk -Mchkstk -Mdalign -Mdclchk -Mdepchk -Miomutex -Mrecursive -Msave -Ktrap=fp -byteswapio 
 
 CFLAGS := $(INCLUDES)
-CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
+CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp -tp haswell
 
 # start with blank LIBS
 LPATH := $(shell nf-config --flibs)
