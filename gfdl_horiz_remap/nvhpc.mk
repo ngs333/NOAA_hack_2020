@@ -2,11 +2,11 @@
 
 MPICC := nvc
 
-CFLAGS_SITE := -tp haswell
-FFLAGS_SITE := -tp haswell
+#CFLAGS_SITE := -tp haswell -Minfo -Mbounds
+#CLIBS_SITE := 
 
-CLIBS_SITE :=
-FLIBS_SITE :=
+CFLAGS_SITE := -tp haswell -acc -ta=nvidia:managed -Minfo -Mbounds -g  -Mnoinline
+CLIBS_SITE := -Mcuda -ta=nvidia
 
 NETCDF_HOME := $(shell nc-config --prefix)
 

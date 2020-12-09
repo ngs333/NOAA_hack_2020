@@ -14,6 +14,7 @@
 #define min(a,b) (a<b ? a:b)
 #define max(a,b) (a>b ? a:b)
 #define SMALL_VALUE ( 1.e-10 )
+
 struct Node{
   double x, y, z, u, u_clip;
   int intersect; /* indicate if this point is an intersection, 0 = no, 1= yes, 2=both intersect and vertices */ 
@@ -29,15 +30,20 @@ struct Node{
 void error_handler(const char *msg);
 int nearest_index(double value, const double *array, int ia);
 int lon_fix(double *x, double *y, int n_in, double tlon);
+#pragma acc routine seq
 double minval_double(int size, const double *data);
+#pragma acc routine seq
 double maxval_double(int size, const double *data);
+#pragma acc routine seq
 double avgval_double(int size, const double *data);
 void latlon2xyz(int size, const double *lon, const double *lat, double *x, double *y, double *z); 
 void xyz2latlon(int size, const double *x, const double *y, const double *z, double *lon, double *lat);
 double box_area(double ll_lon, double ll_lat, double ur_lon, double ur_lat);
+#pragma acc routine seq
 double poly_area(const double lon[], const double lat[], int n);
 double poly_area_dimensionless(const double lon[], const double lat[], int n);
 double poly_area_no_adjust(const double x[], const double y[], int n);
+#pragma acc routine seq
 int fix_lon(double lon[], double lat[], int n, double tlon);
 void tokenize(const char * const string, const char *tokens, unsigned int varlen,
 	      unsigned int maxvar, char * pstring, unsigned int * const nstr);
@@ -74,6 +80,8 @@ struct Node *getNextNode(struct Node *list);
 void copyNode(struct Node *node_out, struct Node node_in);
 void printNode(struct Node *list, char *str);
 int intersectInList(struct Node *list, double x, double y, double z);
+void insertIntersect(struct Node *list, double x, double y, double z, double u1, double u2, int inbound,
+                 double x2, double y2, double z2);
 void insertAfter(struct Node *list, double x, double y, double z, int intersect, double u, int inbound,
 		 double x2, double y2, double z2);
 double gridArea(struct Node *grid);

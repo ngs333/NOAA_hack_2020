@@ -25,7 +25,7 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 			   Grid_config *grid_out, Interp_config *interp, unsigned int opcode) 
 {
   int    n, m, i, ii, jj, nx_in, ny_in, nx_out, ny_out, tile;
-  size_t nxgrid, nxgrid2, nxgrid_prev;
+  size_t nxgrid, nxgrid_prev;
   int    *i_in=NULL, *j_in=NULL, *i_out=NULL, *j_out=NULL;
   int   *tmp_t_in=NULL, *tmp_i_in=NULL, *tmp_j_in=NULL, *tmp_i_out=NULL, *tmp_j_out=NULL;
   double *tmp_di_in, *tmp_dj_in;
@@ -39,7 +39,8 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
   } CellStruct;
   CellStruct *cell_in;
 
-  double time_nxgrid=0;
+  double time_nxgrid=0; 
+  double time_area=0; 
   clock_t time_start, time_end;
   
   garea = 4*M_PI*RADIUS*RADIUS;
@@ -118,6 +119,7 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
     xgrid_clon = (double *)malloc(MAXXGRID   * sizeof(double));
     xgrid_clat = (double *)malloc(MAXXGRID   * sizeof(double));;
     cell_in    = (CellStruct *)malloc(ntiles_in * sizeof(CellStruct));
+#pragma acc enter data create(cell_in[:ntiles_in])
     for(m=0; m<ntiles_in; m++) {
       nx_in = grid_in[m].nx;
       ny_in = grid_in[m].ny;
@@ -129,7 +131,12 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 	cell_in[m].clon[n] = 0;
         cell_in[m].clat[n] = 0;
       }
+#pragma acc enter data create(cell_in[m].area[:nx_in*ny_in])
+#pragma acc enter data create(cell_in[m].clon[:nx_in*ny_in])
+#pragma acc enter data create(cell_in[m].clat[:nx_in*ny_in])
     }
+    printf("ntiles_out  %d\n",ntiles_out);
+    printf("ntiles_in   %d\n",ntiles_in);
     for(n=0; n<ntiles_out; n++) {
       nx_out    = grid_out[n].nxc;
       ny_out    = grid_out[n].nyc;      
@@ -179,14 +186,13 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 	    int    *g_i_in, *g_j_in;
 	    double *g_area, *g_clon, *g_clat;
 	  
-   time_start = clock();
+       time_start = clock();
 	    nxgrid = create_xgrid_2dx2d_order2(&nx_in, &ny_now, &nx_out, &ny_out, grid_in[m].lonc+jstart*(nx_in+1),
 					       grid_in[m].latc+jstart*(nx_in+1),  grid_out[n].lonc,  grid_out[n].latc,
 					       mask, i_in, j_in, i_out, j_out, xgrid_area, xgrid_clon, xgrid_clat);
-   printf("nxgrid, m, & n is: %d %d %d\n",nxgrid, m, n);
-   time_end = clock();
-   time_nxgrid += 1.0 * (time_end - time_start)/CLOCKS_PER_SEC;
 
+       time_end = clock();
+       time_nxgrid += 1.0 * (time_end - time_start)/CLOCKS_PER_SEC;
 	    for(i=0; i<nxgrid; i++) j_in[i] += jstart;
 	  
 	    /* For the purpose of bitiwise reproducing, the following operation is needed. */
@@ -296,6 +302,11 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 	      free(tmp_di_in);
 	      free(tmp_dj_in);
 	    }
+#pragma acc enter data create(interp[n].i_in[:nxgrid])
+#pragma acc enter data create(interp[n].j_in[:nxgrid])
+#pragma acc enter data create(interp[n].t_in[:nxgrid])
+#pragma acc enter data create(interp[n].di_in[:nxgrid])
+#pragma acc enter data create(interp[n].dj_in[:nxgrid])
 	    free(tmp_t_in);
 	    free(tmp_i_in);
 	    free(tmp_j_in);
@@ -308,8 +319,12 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
     }
     print_time("time_nxgrid", time_nxgrid);
 
+  time_start = clock();
     if(opcode & CONSERVE_ORDER2) {
       /* subtrack the grid_in clon and clat to get the distance between xgrid and grid_in */
+//#pragma acc kernels
+   {
+//#pragma acc loop independent private(ii)
       for(n=0; n<ntiles_in; n++) {
 	double x1_in[50], y1_in[50], lon_in_avg, clon, clat;
 	int    j, n0, n1, n2, n3, n1_in;
@@ -330,17 +345,31 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 	      x1_in[1] = grid_in[n].lonc[n1]; y1_in[1] = grid_in[n].latc[n1];
 	      x1_in[2] = grid_in[n].lonc[n2]; y1_in[2] = grid_in[n].latc[n2];
 	      x1_in[3] = grid_in[n].lonc[n3]; y1_in[3] = grid_in[n].latc[n3];
-	      n1_in = fix_lon(x1_in, y1_in, 4, M_PI);
-	      lon_in_avg = avgval_double(n1_in, x1_in);
-              clon = poly_ctrlon(x1_in, y1_in, n1_in, lon_in_avg);
-	      clat = poly_ctrlat (x1_in, y1_in, n1_in );
+	      n1_in = 1.0d;
+	      lon_in_avg = 1.0d;
+	      clon = 1.0d;
+	      clat = 1.0d;
+	      //n1_in = fix_lon(x1_in, y1_in, 4, M_PI);
+	      //lon_in_avg = avgval_double(n1_in, x1_in);
+              //clon = poly_ctrlon(x1_in, y1_in, n1_in, lon_in_avg);
+	      //clat = poly_ctrlat (x1_in, y1_in, n1_in );
 	      cell_in[n].clon[ii] = clon/grid_in[n].cell_area[ii];
 	      cell_in[n].clat[ii] = clat/grid_in[n].cell_area[ii];
 	    }
 	  } 
 	}
       }
+   }
+#pragma acc update device(cell_in[:ntiles_out].dj_in[])
+#pragma acc update device(interp[:ntiles_out].i_in[:nxgrid])
+#pragma acc update device(interp[:ntiles_out].j_in[:nxgrid])
+#pragma acc update device(interp[:ntiles_out].t_in[:nxgrid])
+#pragma acc update device(interp[:ntiles_out].di_in[:nxgrid])
+#pragma acc update device(interp[:ntiles_out].dj_in[:nxgrid])
+#pragma acc kernels default(present)
+   {
       for(n=0; n<ntiles_out; n++) {
+        #pragma acc loop independent private(tile, ii)
 	for(i=0; i<interp[n].nxgrid; i++) {
 	  tile = interp[n].t_in[i];
 	  ii   = interp[n].j_in[i] * grid_in[tile].nx + interp[n].i_in[i];
@@ -348,6 +377,7 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
 	  interp[n].dj_in[i] -= cell_in[tile].clat[ii];
 	}
       }
+   }
 
       /* free the memory */
       for(n=0; n<ntiles_in; n++) {
@@ -357,6 +387,9 @@ void setup_conserve_interp(int ntiles_in, const Grid_config *grid_in, int ntiles
       }
       free(cell_in);
     }
+  time_end = clock();
+  time_area += 1.0 * (time_end - time_start)/CLOCKS_PER_SEC;
+  print_time("time_area", time_area);
     if( opcode & WRITE) { /* write out remapping information */
       for(n=0; n<ntiles_out; n++) {
 	int nxgrid;

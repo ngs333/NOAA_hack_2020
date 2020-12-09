@@ -706,6 +706,8 @@ int main(int argc, char* argv[])
   grid_out  = (Grid_config *)malloc(ntiles_out*sizeof(Grid_config));
   bound_T   = (Bound_config *)malloc(ntiles_in *sizeof(Bound_config));
   interp    = (Interp_config *)malloc(ntiles_out*sizeof(Interp_config));
+//#pragma acc enter data create(grid_in[:ntiles_in])
+//#pragma acc enter data create(interp[:ntiles_out])
 
   if(debug) {
     print_mem_usage("Before calling get_input_grid");

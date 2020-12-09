@@ -20,18 +20,13 @@
     error handler: will print out error message and then abort
 ***********************************************************/
 int reproduce_siena = 0;
+#pragma acc declare copyin(reproduce_siena)
 
-void set_reproduce_siena_true(void)
+/*void set_reproduce_siena_true(void)
 {
   reproduce_siena = 1;
 }
-
-#ifndef __AIX
-void set_reproduce_siena_true_(void)
-{
-  reproduce_siena = 1;
-}
-#endif
+*/
 
   
 void error_handler(const char *msg)
@@ -433,11 +428,12 @@ int fix_lon(double x[], double y[], int n, double tlon)
   if      (dx < -M_PI) for (i=0;i<nn;i++) x[i] += TPI;
   else if (dx >  M_PI) for (i=0;i<nn;i++) x[i] -= TPI;
 
-  if (0&&pole) {
+/*  if (0&&pole) {
     printf("area=%g\n", poly_area(x, y,nn));
     v_print(x, y, nn);
     printf("---------");
   }
+*/
 
   return (nn);
 } /* fix_lon */
@@ -1348,4 +1344,3 @@ int inside_a_polygon_(double *lon1, double *lat1, int *npts, double *lon2, doubl
 
 }
 #endif
-
