@@ -34,7 +34,7 @@ CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=fp
 
 # start with blank LIBS
 LIBS :=
-LDFLAGS := $(shell nc-config --flibs)
+LDFLAGS := -L/usr/local/cuda/lib -L/usr/local/cuda/targets/x86_64-linux/lib/ -lnvToolsExt $(shell nc-config --flibs)
 
 ifneq ($(DEBUG),)
 CFLAGS += $(CFLAGS_DEBUG)

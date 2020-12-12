@@ -3,6 +3,7 @@
 ! pressure level for remapping.
 module fv_mapz_mod
 
+  use nvtx_mod
 
   implicit none
 
@@ -123,8 +124,11 @@ contains
     rg = rdgas
     rcp = 1./ cp
     rrg = -rdgas/grav
+
+    call nvtxStartRange("LtoE_DO12A",2)
+    
 !$ACC kernels
-!$ACC loop collapse(3)
+!$ACC loop tile (16,16)
     do k = 1, km+1
        do j=js,je+1
           do i=is,ie
@@ -132,7 +136,7 @@ contains
           enddo
        enddo
     enddo
-!$ACC loop collapse(2)
+!$ACC loop tile (16,16)
     do j=js,je+1
        do i=is,ie
           pe2(i,j,   1) = ptop
@@ -143,6 +147,7 @@ contains
        ! Note: pt at this stage is Theta_v
        if ( hydrostatic ) then
           ! Transform virtual pt to virtual Temp
+!$ACC loop tile  (16,16)
           do k=1,km
              do j=js,je
                 do i=is,ie
@@ -152,6 +157,7 @@ contains
           enddo
        else
           ! Transform "density pt" to "density temp"
+!$ACC loop tile (16,16)
           do k=1,km
              do j=js,je
                 do i=is,ie
@@ -163,6 +169,7 @@ contains
     elseif ( hydrostatic ) then
        call pkez(km, is, ie, js, je, pe, pk, akap, peln, pkz, ptop)
        ! Compute cp*T + KE
+!$ACC loop tile (16,16)
        do k=1,km
           do j=js,je
              do i=is,ie
@@ -175,6 +182,7 @@ contains
        enddo
     endif
     if ( .not. hydrostatic ) then
+!$ACC loop tile (16,16)
        do k=1,km
           do j=js,je
              do i=is,ie
@@ -183,7 +191,10 @@ contains
           enddo
        enddo
     endif
+    
+    call nvtxEndRange
 
+    call nvtxStartRange("LE_UPS2B",2)
     ! update ps
     do j=js,je
        do i=is,ie
@@ -209,6 +220,10 @@ contains
           enddo
        enddo
     enddo
+
+    call nvtxEndRange
+
+    call nvtxStartRange("LE_KAP3A",3)
     !------------------
     ! Compute p**Kappa
     !------------------
@@ -235,7 +250,13 @@ contains
           enddo
        enddo
     enddo
-!$ACC end kernels
+    
+    !$ACC end kernels
+
+    call nvtxEndRange
+    
+    call nvtxStartRange("LE_pMapCon3A",3)
+
     if ( kord_tm<0 ) then
        !----------------------------------
        ! Map t using logp
@@ -248,7 +269,10 @@ contains
 !          call map1_ppm (km,  pe1,  pt,  gz,       &
 !               km,  pe2,  pt,                  &
 !               is, ie, js, je, isd, ied, jsd, jed, 1, abs(kord_tm))
-    endif
+       endif
+
+
+
     !----------------
     ! Map constituents
     !----------------
@@ -284,7 +308,7 @@ contains
           enddo
        enddo
     endif
-
+    
     !----------
     ! Update pk
     !----------
@@ -320,9 +344,12 @@ contains
           enddo
        enddo
     enddo
+    call nvtxEndRange
+    
     !------------
     ! Compute pkz
     !------------
+    call nvtxStartRange("LE_pkz3B",3)
     if ( hydrostatic ) then
        do k=1,km
           do j=js,je
@@ -365,6 +392,10 @@ contains
        endif
     endif
 
+    call nvtxEndRange
+
+    call nvtxStartRange("LE_HOMEG7",8)
+    
     ! Interpolate omega/pe3 (defined at pe0) to remapped cell center (dp2)
     if ( do_omega ) then
        do k=1,km
@@ -392,7 +423,8 @@ contains
        enddo
     endif     ! end do_omega
 
-
+    call nvtxEndRange
+    
     do j=js,je+1
        do i=is,ie+1
           pe0(i,j,1) = pe(i,1,j)
@@ -416,9 +448,15 @@ contains
           enddo
        enddo
     enddo
+
+
+    
     call map1_ppm( km, pe0,   u,   gz,   &
             km, pe3,   u,               &
             is, ie, js, je+1, isd, ied, jsd, jed+1, -1, kord_mt)
+
+
+    
     !------
     ! map v
     !------
@@ -456,6 +494,7 @@ contains
        enddo
     enddo
 
+    call nvtxStartRange("LE_las4A", 4)
     dtmp = 0.
     if( last_step ) then
 
@@ -602,6 +641,8 @@ contains
        endif
     endif
 
+    call nvtxEndRange
+    
   end subroutine Lagrangian_to_Eulerian
 
 
@@ -626,6 +667,8 @@ contains
     real ak1
     integer i, j, k
 
+    ! call nvtxStartRange("pkez_5",5)
+    
     ak1 = (akap + 1.) / akap
     do j=jfirst,jlast
        pek = pk(ifirst,j,1)
@@ -661,7 +704,9 @@ contains
        enddo
     enddo
 
-  end subroutine pkez
+    ! call nvtxEndRange
+    
+  End subroutine pkez
 
 
 
@@ -705,6 +750,8 @@ contains
     integer i, j, k, l, m, k0
     logical keep_going
 
+    call nvtxStartRange("mapSca_6",6)
+    
 !$ACC kernels
     do k=1,km
        do j=j1, j2
@@ -767,6 +814,8 @@ contains
     enddo
 !$ACC end kernels
 
+    call nvtxEndRange
+    
   end subroutine map_scalar
 
 
@@ -805,7 +854,11 @@ contains
     real   q4(4,i1:i2,j1:j2,km)
     real    pl, pr, qsum, dp, esl
     integer i, j, k, l, m, k0
+
     logical :: keep_going
+
+
+    call nvtxStartRange("ma1ppm_7",7)
 
     do k=1,km
        do j=j1,j2
@@ -866,6 +919,8 @@ contains
        enddo
     enddo
 
+    call nvtxEndRange
+    
   end subroutine map1_ppm
 
 
@@ -903,6 +958,9 @@ contains
     integer i, j, k, l, m, k0
     logical :: keep_going
 
+    call nvtxStartRange("map1q2_8",8)
+    
+    
     do j=j1,j2
        do k=1,km
           do i=i1,i2
@@ -962,7 +1020,9 @@ contains
           enddo
        enddo
     enddo
-
+    
+    call nvtxEndRange
+    
   end subroutine map1_q2
 
 
@@ -988,6 +1048,8 @@ contains
    real   pmp_1, lac_1, pmp_2, lac_2
    integer i, j, k, im
 
+   call nvtxStartRange("scaProf9",9)  
+   
 !$acc kernels
    if ( iv .eq. -2 ) then
       do j=j1,j2
@@ -1422,6 +1484,8 @@ contains
    call cs_limiters(i1,i2,j1,j2,km-1,km-1, extm(i1,j1,km-1), a4(1,i1,j1,km-1), 2)
    call cs_limiters(i1,i2,j1,j2,km,km, extm(i1,j1,km), a4(1,i1,j1,km), 1)
 
+   call nvtxEndRange
+   
  end subroutine scalar_profile
 
 
@@ -1446,6 +1510,7 @@ contains
    real   pmp_1, lac_1, pmp_2, lac_2
    integer i, j, k, im
 
+   call nvtxStartRange("csProf10",10)  
    if ( iv .eq. -2 ) then
       do j=j1,j2
          do i=i1,i2
@@ -1839,6 +1904,8 @@ contains
    call cs_limiters(i1,i2,j1,j2,km-1,km-1, extm(i1,j1,km-1), a4(1,i1,j1,km-1), 2)
    call cs_limiters(i1,i2,j1,j2,km,km, extm(i1,j1,km), a4(1,i1,j1,km), 1)
 
+   call nvtxEndRange
+
  end subroutine cs_profile
 
 
@@ -1850,6 +1917,9 @@ contains
    ! !LOCAL VARIABLES:
    real  da1, da2, a6da
    integer i,j,k
+
+   !call nvtxStartRange("cslim11",11)
+
 !$acc kernels
    if ( iv==0 ) then
       ! Positive definite constraint
@@ -1929,7 +1999,10 @@ contains
          enddo
       enddo
    endif
-!$ACC end kernels
+   !$ACC end kernels
+
+   call nvtxEndRange
+   
  end subroutine cs_limiters
 
 
@@ -1972,6 +2045,8 @@ contains
    real  fac
    real  a1, a2, c1, c2, c3, d1, d2
    real  qm, dq, lac, qmp, pmp
+
+   !call nvtxStartRange("ppmProf12A")
 
    km1 = km - 1
    it = i2 - i1 + 1
@@ -2085,6 +2160,9 @@ contains
       enddo
    enddo
 
+   !call nvtxEndRange
+   !call nvtxStartRange("ppmProf12B",12)
+   
       ! Enforce constraint on the "slope" at the surface
 
 #ifdef BOT_MONO
@@ -2141,6 +2219,9 @@ contains
    enddo
    call ppm_limiters(i1,i2,j1,j2,1,2,dc(i1,j1,1), a4(1,i1,j1,1), 0)
 
+   !!call nvtxEndRange
+   
+   !call nvtxStartRange("ppmProf12C",12)
    if(kord >= 7) then
       !-----------------------
       ! Huynh's 2nd constraint
@@ -2219,6 +2300,8 @@ contains
 
    call ppm_limiters(i1,i2,j1,j2,km1,km,dc(i1,j1,km1), a4(1,i1,j1,km1), 0)
 
+   !call nvtxEndRange
+   
  end subroutine ppm_profile
 
 
@@ -2245,6 +2328,8 @@ contains
 
    ! Developer: S.-J. Lin
 
+   !call nvtxStartRange("ppmLims",13)
+   
    if ( lmt == 3 ) return
 
    if(lmt == 0) then
@@ -2312,7 +2397,9 @@ contains
          enddo
       enddo
    endif
-
+   
+   !call nvtxEndRange
+   
  end subroutine ppm_limiters
 
 
@@ -2325,12 +2412,15 @@ contains
       integer :: i,j
       real gsum
 
+      !call nvtxStartRange("gSum14",14)
          gsum = 0.
          do j=jfirst,jlast
             do i=ifirst,ilast
                gsum = gsum + p(i,j)*area(i,j)
             enddo
          enddo
+
+      !call nvtxEndRange
 
  end function g_sum
 

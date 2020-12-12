@@ -4,6 +4,8 @@ program Main
   use fv_mapz_mod, only : CP_AIR, RVGAS, RDGAS
   use fv_mapz_mod, only : Lagrangian_to_Eulerian, fv_grid_type
 
+  use nvtx_mod
+  
   implicit none
 include 'mpif.h'
 
@@ -66,6 +68,8 @@ include 'mpif.h'
 ! call mpi_init(info)
 ! call mpi_comm_rank(mpi_comm_world, myrank, info)
 
+  call nvtxStartRange("Main1")
+  
   CALL system_clock(count_rate=cr)
   CALL system_clock(count_max=cm)
   rate = REAL(cr)
@@ -209,6 +213,8 @@ include 'mpif.h'
   peln_old = peln
   call system_clock(start_time)
 
+  call nvtxStartRange("M_LtoU",1)
+  
   do iter = 1, num_iter
      pt = pt_old
      delz = delz_old
@@ -225,6 +231,10 @@ include 'mpif.h'
                       hydrostatic, do_omega)
   end do
 
+  call nvtxEndRange
+  call nvtxEndRange
+  
+
 call system_clock(end_time)
 total_time = (end_time-start_time)/rate
 
@@ -234,6 +244,9 @@ total_time = (end_time-start_time)/rate
   call print_chksum(pt, "pt")
 
   write(*,*) ' elapsed time (secs) = ', total_time
+
+  call nvtxEndRange
+
 
 
 contains
@@ -366,7 +379,6 @@ contains
      print*, trim(str)//" chksum is ", chksum_data
 
   end subroutine print_chksum
-
 
 end program Main
 
